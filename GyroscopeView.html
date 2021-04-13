@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="mecho.css">
+    <script src="mechoff.min.js" ></script>
+<script>
+    function main(){
+
+        scene = new Mecho();
+        scene.onTime = animate;
+        scene.ground = Mecho.INDUSTRIAL
+        scene.sky = Mecho.BLACK
+
+        //основата
+        p = pillar([0,0,0], 2, 0.3, 1.25, 3)
+        p.material=Mecho.METAL
+
+        //основното колче на жироскопа
+        t0 = tube([0,0,7], 10, 0.15);
+        t0.material = Mecho.SCRATCH
+        // накланяме жироскопа малко
+        t0.rotV=3 //max 78 през 5
+
+        //изчисляваме ъгъла на наклона
+        angle = (PI/180)*t0.rotV
+        //и разстоянието на отместване от центъра което се е получило от наклянянето
+        x = 5 - sqrt(25*cos(angle)*cos(angle));
+
+        //отместване на центъра спрямо ъгъла
+        t0.center.z = 7 - x
+
+        //дървената пластина
+        t1 = tube([0,0,1], 5, 0.25);
+        t1.material = Mecho.WOOD
+        t1.parent = t0
+
+        //металните рингове
+        r0 = ring([0,0,1], 5, 0.5, 0.25, 0.25)
+        r0.rotV = 90
+        r0.material = Mecho.METAL
+        r0.parent = t0
+
+        r1 = ring([0,0,0], 5, 0.5, 0.25, 0.25)
+        r1.material = Mecho.METAL
+        r1.parent = r0
+        r1.rotV = 90
+
+        //златния ринг
+        r2 = ring([0,0,1], 4, 0.5, 0.25, 0.75)
+        r2.material = Mecho.GOLD
+        r2.parent = t0
+
+        //златните части в златния ринг
+        b0 = beam([0,0,1],2,0.5,0.5,0.6,0.5,0.5)
+        b0.material = Mecho.GOLD
+        b0.parent = t0
+
+        b1 = beam([0,0,1],2,0.5,0.5,0.6,0.5,0.5)
+        b1.material = Mecho.GOLD
+        b1.rotH = 90
+        b1.parent = t0
+
+        b2 = beam(t1.center,2,0.5,0.5,0.6,0.5,0.5)
+        b2.material = Mecho.GOLD
+        b2.rotH = 180
+        b2.parent = t0
+
+        b3 = beam(t1.center,2,0.5,0.5,0.6,0.5,0.5)
+        b3.material = Mecho.GOLD
+        b3.rotH = 270
+        b3.parent = t0
+
+        //посоката и скоростта на въртене
+        dir = -1
+        speed = 1.6
+
+        //бутони без картинки
+        button('','right', angleChangeDown)
+        button('','left', angleChangeUp)
+        button('', 'space', changeDir)
+        button('', 'up', speedUp)
+        button('', 'down', speedDown)
+    }
+
+    function animate()
+    {
+        let t = speed*Mecho.time;
+
+        r2.rotH = t*1000*dir
+
+        b0.rotH = r2.rotH
+        b1.rotH = b0.rotH+90
+        b2.rotH = b1.rotH+90
+        b3.rotH = b2.rotH+90
+
+        //представяме си че въртим правоъгълен триъгълник така,
+        // че хипотенузата му да образува конус
+        t0.rotH =dir*(180/PI)*t + 90
+        t0.center.x = dir*sin(angle)*5*sin(t);
+        t0.center.y = sin(angle)*5*cos(t)
+
+        //въртим и металните рингове с някоя готина функция
+        let ringRotSqr = sin(angle)*dir*20*t
+        r0.rotH = ringRotSqr*ringRotSqr/t - t0.rotH
+    }
+
+    //увеличава ъгъла
+    function angleChangeDown(){
+        if(t0.rotV+5<=78 && t0.rotV+5>=3) {
+            t0.rotV += 5
+            angle = (PI / 180) * t0.rotV
+            x = 5 - sqrt(25*cos(angle)*cos(angle));
+            t0.center.z = 7 - x
+        }
+    }
+
+    //намалява ъгъла
+    function angleChangeUp(){
+        if(t0.rotV-5<=78 && t0.rotV-5>=3) {
+            t0.rotV -= 5
+            angle = (PI / 180) * t0.rotV
+            x = 5 - sqrt(25*cos(angle)*cos(angle));
+            t0.center.z = 7 - x
+        }
+    }
+
+    //сменяме посоката
+    function changeDir(){
+        dir = (-1)*dir;
+    }
+
+    //увеличаваме и намаляме скоростта
+    function speedUp(){
+        if(speed+0.1<=5)
+            speed+=0.1
+    }
+
+    function speedDown(){
+        if(speed-0.1>=0)
+            speed-=0.1
+    }
+
+
+
+
+</script>
+
+    <title>Title</title>
+</head>
+
+<body onload="main()">
+<h1 style="color: white">Симулация на Жироскоп</h1>
+<h2 style="color: white">от Виктор Василев</h2>
+<h2 style="color: white">с различни скорости и посоки на въртене</h2>
+<h2 style="color: white">(горна и долна стрелка управляват скоростта, лява и дясна - ъгъла на въртене, space - променя посоката)</h2>
+</body>
+
+</html>
